@@ -1,0 +1,8 @@
+# Editor configuration, see https://editorconfig.org
+root = true
+
+[*.jsx]
+quote_type = double
+
+[*.js]
+quote_type = single
