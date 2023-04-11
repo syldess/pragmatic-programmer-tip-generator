@@ -1,7 +1,8 @@
 # The Pragmatic Programmer Tip Generator
 
 <!--badges here-->
-[![Netlify Status](https://api.netlify.com/api/v1/badges/db9108c8-993c-4364-b5d0-ab6389eed0d3/deploy-status)](https://app.netlify.com/sites/pragmaticprogrammertips/deploys)
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/6af26ea3-4955-4a29-83f3-cb148c5b1658/deploy-status)](https://app.netlify.com/sites/pragmaticprogrammertips/deploys)
 
 ## Purpose
 
