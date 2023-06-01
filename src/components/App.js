@@ -1,118 +1,117 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import NumberRolodex from './NumberRolodex';
 import Alert from './Alert';
 import { allTips } from '../tips/tipsData';
 
 import './App.css';
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      number: '001',
-      tips: allTips,
-    };
-  }
+function App() {
+  const [currentNumber, setCurrentNumber] = useState('001');
+  const [tips] = useState(allTips);
+  const [title] = useState('The Pragmatic Programmer Tip Generator');
+  const [btnText] = useState('Get A Random Tip');
+  const [lowLimit] = useState('000');
+  const [highLimit] = useState('100');
+  const [alertTotalNumberWarning] = useState({ color: 'red', 
+                                              msg:'There are 100 tips in the databank. Please choose a tip between 1 and 100 inclusive.'});
+  const [footerInfo] = useState({ date: 'Copyright; 2020 ', 
+                                  name: 'Sylvain Dessureault ',
+                                  portfolioLink: 'https://sylvaindessureault.com',
+                                  message: 'Built with love for all programmers out there.',
+                                  copyrightNotice: 'All quotes and briefs taken from "The Pragmatic Programmer\n20th anniversary edition, Copyright David Thomas and Andrew Hunt.'
+                                })
 
-  handleChangeNumber(num) {
-    this.setState({ ...this.state, number: num });
-  }
+  const handleChangeNumber = useCallback((num)=>{
+    setCurrentNumber(num)
+  }, [setCurrentNumber])
 
-  getTip = () => {
-    console.log('getting tip');
-    console.log(this.state.number);
+  const generateRandomNumber = useCallback(()=>{
+    return Math.floor(Math.random() * Number(highLimit));
+  },[highLimit])
+
+  const getRandomTipNumber = useCallback(()=>{
+    let randomTipNumber;
+    do {
+      randomTipNumber = generateRandomNumber();
+    } while (randomTipNumber < Number(lowLimit) || randomTipNumber > Number(highLimit));
+
+    randomTipNumber =
+      randomTipNumber !== Number(highLimit)
+        ? randomTipNumber >= Number(highLimit) / 10
+          ? `0${randomTipNumber.toString()}`
+          : `00${randomTipNumber.toString()}`
+        : randomTipNumber;
+    handleChangeNumber(randomTipNumber);
+
+  }, [lowLimit, highLimit, generateRandomNumber, handleChangeNumber])
+
+  useEffect(()=>{
+    getRandomTipNumber();
+  }, [getRandomTipNumber]);
+
+  const validateNumber = (num) => {
+    return num > Number(lowLimit) && num <= Number(highLimit);
   };
 
-  getRandomTip = () => {
-    let randomTip = Math.floor(Math.random() * 100);
-    randomTip =
-      randomTip !== 100
-        ? randomTip > 10
-          ? `0${randomTip.toString()}`
-          : `00${randomTip.toString()}`
-        : randomTip;
-    console.log('getting random tip: ' + randomTip);
-    this.handleChangeNumber(randomTip);
-  };
-
-  validateNumber = () => {
-    return this.state.number > 0 && this.state.number <= 100;
-  };
-
-  componentDidMount() {
-    this.getRandomTip();
+  let currentTip, brief;
+  let convertedNumber = Number(currentNumber);
+  if (tips[convertedNumber - 1]) {
+    currentTip = tips[convertedNumber - 1].tip;
+    brief = tips[convertedNumber - 1].brief;
   }
-
-  render() {
-    const { number, tips } = this.state;
-    let tip, brief;
-    let convertedNumber = Number(number);
-    if (tips[convertedNumber - 1]) {
-      tip = tips[convertedNumber - 1].tip;
-      brief = tips[convertedNumber - 1].brief;
-    }
-    return (
-      <>
-        <div className="container">
-          <div className="title">
-            <h1>The Pragmatic Programmer Tip Generator</h1>
-          </div>
-          <div className="rolodex">
-            <div className="number-container">
-              <NumberRolodex
-                number={this.validateNumber() ? number : '000'}
-                changeNumber={(num) => this.handleChangeNumber(num)}
-              />
-            </div>
-          </div>
-          <div>
-            <button
-              className="action-btn disable-select"
-              onClick={() => this.getRandomTip()}
-            >
-              Get A Random Tip
-            </button>
-          </div>
-          {this.validateNumber() ? (
-            <div className={'tip-block'}>
-              <div id="tip">{tip}</div>
-              <div id="brief">{brief}</div>
-            </div>
-          ) : (
-            <Alert
-              message={
-                'There are 100 tips in the databank. Please choose a tip between 1 and 100 inclusive.'
-              }
-              color={'red'}
+  return (
+    <>
+      <div className="container">
+        <div className="title">
+          <h1>{title}</h1>
+        </div>
+        <div className="rolodex">
+          <div className="number-container">
+            <NumberRolodex
+              number={validateNumber(currentNumber) ? currentNumber : lowLimit}
+              changeNumber={(num) => handleChangeNumber(num)}
             />
-          )}
-          <div id="footer">
-            <div className="dev-meta">
-              <p>
-                &copy; 2020
-                <a
-                  href="https://github.com/syldess"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="item"
-                >
-                  {' '}
-                  Sylvain Dessureault
-                </a>
-              </p>
-              Built with love for all programmers out there.
-            </div>
-            <div className="authors-copyright">
-              <p>All quotes and briefs taken from "The Pragmatic Programmer"</p>
-              <p>
-                20th anniversary edition, &copy; David Thomas and Andrew Hunt.
-              </p>
-            </div>
           </div>
         </div>
-      </>
-    );
-  }
+        <div>
+          <button
+            className="action-btn disable-select"
+            onClick={() => getRandomTipNumber()}
+          >{btnText}</button>
+        </div>
+        {validateNumber(currentNumber) ? (
+          <div className={'tip-block'}>
+            <div id="tip">{currentTip}</div>
+            <div id="brief">{brief}</div>
+          </div>
+        ) : (
+          <Alert
+            message={alertTotalNumberWarning.msg}
+            color={alertTotalNumberWarning.color}
+          />
+        )}
+        <div id="footer">
+          <div className="dev-meta">
+            <p>
+              {footerInfo.date}
+              <a
+                href={footerInfo.portfolioLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="item"
+              >
+                {footerInfo.name}
+              </a>
+            </p>
+            {footerInfo.message}
+          </div>
+          <div className="authors-copyright">
+            <p>{footerInfo.copyrightNotice}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default App;
